@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Results</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fff;
+            margin: 0;
+            padding: 0;
+            color: #000;
+            overflow-y: scroll;
+            position: relative;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #000;
+            border: 1px solid #fff;
+            position: relative;
+            z-index: 2;
+        }
+
+        .article {
+            background-color: #000;
+            border: 1px solid #fff;
+            border-radius: 4px;
+            padding: 20px;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        .article-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0 0 10px;
+            color: #fff;
+        }
+
+        .article-authors {
+            font-size: 16px;
+            margin: 0 0 10px;
+        }
+
+        .article-abstract {
+            font-size: 14px;
+            margin: 0 0 20px;
+        }
+
+        .article-arxiv-id {
+            font-size: 14px;
+            font-weight: bold;
+            margin: 0 0 10px;
+            color: purple;
+        }
+
+        .article-link {
+            font-size: 14px;
+            text-decoration: none;
+            color: blue;
+        }
+
+        .floating-words-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .falling-words-line {
+            position: absolute;
+            top: -50px;
+            left: 0;
+            transform: translateX(-50%);
+            animation: fallAnimation 8s linear infinite;
+            white-space: nowrap;
+        }
+
+        .falling-word {
+            opacity: 1;
+            color: #000;
+            font-size: 16px;
+            position: absolute;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .chatbox-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: black;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 9999;
+        }
+
+        .chatbox-input {
+            width: 100%;
+            padding: 5px;
+            margin-top: 5px;
+            border: none;
+            border-radius: 3px;
+        }
+
+
+        @keyframes fallAnimation {
+            0% {
+                top: -50px;
+                opacity: 1;
+                transform: translateX(-50%);
+            }
+            100% {
+                top: 100vh;
+                opacity: 1;
+                transform: translateX(-50%);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% if results %}
+        <h2>Relevant Research Articles:</h2>
+        {% for result in results %}
+            <div class="article">
+                <h3 class="article-title" style="color: #fff;">{{ result.title }}</h3>
+                <p class="article-authors">Authors: {{ result.authors }}</p>
+                <p class="article-arxiv-id">arXiv ID: {{ result.arxiv_id }}</p>
+                <p class="article-abstract">{{ result.abstract }}</p>
+                <p><a class="read-more-link" href="https://arxiv.org/abs/{{ results[loop.index0]['arxiv_id'] }}" target="_blank">Read more</a></p>
+            </div>
+        {% endfor %}
+        {% else %}
+            <p>No relevant research articles found.</p>
+        {% endif %}
+    </div>
+
+    <div class="floating-words-container">
+        {% for result in results %}
+        <div class="falling-words-line" style="left: {% if loop.index % 2 == 0 %}10px{% else %}calc(100% - 10px){% endif %};">
+            <span class="falling-word">{{ result.arxiv_id }}</span>
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        window.addEventListener("DOMContentLoaded", function() {
+            var words = [];
+            var elements = document.querySelectorAll("body *");
+            elements.forEach(function(element) {
+                if (element.tagName !== "SCRIPT") {
+                    var textContent = element.textContent.trim();
+                    if (textContent !== "") {
+                        words.push(textContent);
+                    }
+                }
+            });
+
+            function createFallingWord() {
+                var wordContainer = document.createElement("span");
+                wordContainer.classList.add("falling-word");
+                wordContainer.textContent = words[Math.floor(Math.random() * words.length)];
+                document.querySelector(".falling-words-line").appendChild(wordContainer);
+
+                var x = (Math.random() - 0.5) * window.innerWidth;
+                var y = (Math.random() - 0.5) * window.innerHeight;
+
+                var xVelocity = (Math.random() - 0.5) * 5;
+                var yVelocity = (Math.random() - 0.5) * 5;
+
+                function updatePosition() {
+                    x += xVelocity;
+                    y += yVelocity;
+
+                    if (x + wordContainer.clientWidth > window.innerWidth || x < 0) {
+                        xVelocity *= -1;
+                    }
+
+                    if (y + wordContainer.clientHeight > window.innerHeight || y < 0) {
+                        yVelocity *= -1;
+                    }
+
+                    wordContainer.style.transform = `translate(${x}px, ${y}px)`;
+
+                    requestAnimationFrame(updatePosition);
+                }
+
+                requestAnimationFrame(updatePosition);
+            }
+
+            setInterval(function() {
+                createFallingWord();
+            }, 500);
+        });
+    </script>
+
+<div class="chatbox-container">
+    <h3>Enter an arXiv ID:</h3>
+    <input class="chatbox-input" type="text" id="arxiv-id-input" placeholder="e.g., 2101.12345">
+    <button onclick="submitArxivID()">Submit</button>
+</div>
+
+    <!-- JavaScript code -->
+    <script>
+        function submitArxivID() {
+            var arxivID = document.getElementById('arxiv-id-input').value;
+            var url = "/genie?arxiv_id=" + encodeURIComponent(arxivID);
+            window.location.href = url;
+        }
+    </script>
+    
+</body>
+</html>

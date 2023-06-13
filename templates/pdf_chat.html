@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PDF Chat</title>
+    <script src="{{ url_for('static', filename='js/pdf_chat.js') }}"></script>
+    <style>
+        /* Add your CSS styles here */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f1f1f1;
+        }
+        
+        .chatbox {
+            width: 400px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .message {
+            margin-bottom: 10px;
+        }
+        
+        .user-message {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="chatbox">
+        <h1>PDF Chat</h1>
+
+        <div id="chatbox-content">
+            <!-- Chat messages will be dynamically added here -->
+        </div>
+
+        <form id="chat-form">
+            <input type="text" id="user-input" placeholder="Type your message..." />
+            <button type="submit">Send</button>
+        </form>
+    </div>
+
+    <script>
+        // JavaScript code to handle dynamic chat functionality
+        const chatboxContent = document.getElementById('chatbox-content');
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
+
+        function addMessage(message, isUserMessage = false) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+
+            if (isUserMessage) {
+                messageElement.classList.add('user-message');
+            }
+
+            messageElement.innerText = message;
+            chatboxContent.appendChild(messageElement);
+        }
+
+        function sendMessage(event) {
+            event.preventDefault();
+            const userMessage = userInput.value.trim();
+
+            if (userMessage !== '') {
+                // Add user message to the chatbox
+                addMessage(userMessage, true);
+                userInput.value = '';
+
+                // Send the user message to the server for processing
+                sendUserMessage(userMessage);
+            }
+        }
+
+        function receiveMessage(message) {
+            // Add the received message to the chatbox
+            addMessage(message);
+        }
+
+        function sendUserMessage(message) {
+            // Send the user message to the server using AJAX or Fetch API
+            // Replace the URL with the appropriate endpoint for processing the user message
+            fetch('/process_message', {
+                method: 'POST',
+                body: JSON.stringify({ message: message }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Receive the response from the server and add it to the chatbox
+                receiveMessage(data.message);
+            })
+            .catch(error => {
+                console.log('An error occurred:', error);
+            });
+        }
+
+        chatForm.addEventListener('submit', sendMessage);
+    </script>
+</body>
+</html>

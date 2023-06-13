@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Genie</title>
+    <style>
+        /* Reset default styles */
+
+        body {
+            background-color: #000;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #000;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+        background-color: transparent;
+        text-align: center;
+        margin-bottom: 20px;
+        }
+
+        .genie-heading {
+            font-size: 32px;
+            font-weight: 300;
+            color: #fff;
+            letter-spacing: 2px;
+            margin: 0;
+        }
+
+        .genie-subtitle {
+            font-size: 16px;
+            font-weight: 300;
+            color: #fff;
+            margin: 10px 0;
+        }
+
+        .log {
+            background-color: #fff;
+            border-radius: 4px;
+            padding: 20px;
+            margin-bottom: 20px;
+            overflow-y: auto;
+            flex-grow: 1;
+            transition: max-height 0.3s ease-in-out;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .log-entry {
+            margin-bottom: 10px;
+        }
+
+        .log-entry .question {
+            color: #000;
+            font-weight: bold;
+        }
+
+        .log-entry .answer {
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .chatbox {
+            background-color: #000;
+            border: 1px solid #fff;
+            border-radius: 4px;
+            padding: 20px;
+            width: 100%;
+            text-align: center;
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .chatbox textarea {
+            width: 100%;
+            height: 60px;
+            resize: none;
+            margin-bottom: 10px;
+            padding: 5px;
+            color: #fff;
+            background-color: transparent;
+            border: none;
+            font-family: Arial, sans-serif;
+            font-weight: normal;
+            font-size: 14px;
+        }
+
+        .chatbox button {
+            background-color: #fff;
+            color: #000;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+
+        .chatbox h3 {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 10px 0;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Chat with the Research Genie</h1>
+        </div>
+        <div id="log" class="log">
+            {% for message in chat_log %}
+                <div class="log-entry">
+                    {% if message.is_question %}
+                        <p class="question">{{ message.text }}</p>
+                    {% else %}
+                        <p class="answer">{{ message.text }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="chatbox">
+            <form method="post" action="/genie">
+                <input type="hidden" name="arxiv_id" value="{{ arxiv_id }}">
+                <textarea name="question" placeholder="Enter your question..." required></textarea>
+                <button type="submit" onclick="expandLog()">Submit</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="falling-words">
+        <div class="falling-words-left"></div>
+        <div class="falling-words-right"></div>
+    </div>
+
+    <script>
+        function getRandomIndex(max) {
+            return Math.floor(Math.random() * max);
+        }
+
+        function animateFallingWords(words) {
+            const fallingWords = document.querySelectorAll(".falling-word");
+
+            fallingWords.forEach(fallingWord => {
+                const delay = Math.random() * 2;
+                const duration = Math.random() * 3 + 2;
+
+                fallingWord.style.animationDelay = `${delay}s`;
+                fallingWord.style.animationDuration = `${duration}s`;
+                fallingWord.style.opacity = 1;
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch("words.csv")
+                .then(response => response.text())
+                .then(text => {
+                    const words = text.split("\n").map(row => {
+                        const columns = row.split(",");
+                        return columns[1].trim();
+                    });
+
+                    const leftWordsContainer = document.querySelector(".falling-words-left");
+                    const rightWordsContainer = document.querySelector(".falling-words-right");
+
+                    for (let i = 0; i < words.length; i++) {
+                        const word = words[i];
+                        const fallingWord = document.createElement("span");
+                        fallingWord.className = "falling-word";
+                        fallingWord.textContent = word;
+
+                        if (getRandomIndex(2) === 0) {
+                            leftWordsContainer.appendChild(fallingWord);
+                        } else {
+                            rightWordsContainer.appendChild(fallingWord);
+                        }
+                    }
+
+                    animateFallingWords(words);
+                })
+                .catch(error => {
+                    console.error("Error loading words:", error);
+                });
+        });
+    </script>
+</body>
+</html>

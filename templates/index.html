@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search for Relevant Research Papers</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom, white 50%, black 50%);
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .subtitle {
+            color: #000;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .upload-title {
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .search-box {
+            background-color: #000;
+            color: #fff;
+            padding: 10px;
+            font-size: 18px;
+            border: none;
+            border-radius: 4px 0 0 4px;
+            width: 70%;
+            min-width: 250px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .search-button {
+            background-color: #000;
+            color: #fff;
+            padding: 8px 12px;
+            font-size: 16px;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+        }
+
+        .search-button:hover {
+            background-color: #222;
+        }
+
+        .upload-button {
+            background-color: #fff;
+            color: #000;
+            padding: 10px 20px;
+            font-size: 18px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .upload-button:hover {
+            background-color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="subtitle">
+            Research Genie
+        </div>
+        <form action="{{ url_for('index') }}" method="POST">
+            <div style="display: flex; align-items: center;">
+                <input class="search-box" type="text" name="search_query" placeholder="Enter keyword" autocomplete="off">
+                <button class="search-button" type="submit">Search</button>
+            </div>
+        </form>
+        <div class="upload-title">
+            Upload PDF for Chat Features
+        </div>
+        <form action="{{ url_for('pdf_upload') }}" method="POST" enctype="multipart/form-data">
+            <input class="upload-button" type="file" name="pdf_file" accept=".pdf">
+            <button class="upload-button" type="submit">Upload PDF</button>
+        </form>
+    </div>
+</body>
+</html>
